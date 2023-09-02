@@ -1,0 +1,65 @@
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: img_site
+      MYSQL_USER: user
+      MYSQL_ROOT_PASSWORD: mypassword
+      MYSQL_PASSWORD: mypassword
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1 #True
+    volumes:
+      - ./mysql-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - '3306:3306'
+    networks:
+      - shared-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - 8082:80
+    environment:
+      MYSQL_ROOT_PASSWORD: mypassword
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: mypassword
+    networks:
+      - shared-network
+
+  api:
+    container_name: imgsite_api
+    restart: unless-stopped
+    image: imgsite-api-prod:0.7.0
+    build:
+      context: api
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    networks:
+      - shared-network
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: stringsecretforimgsitejwt
+    depends_on:
+      - db
+
+  client:
+    container_name: imgsite_client
+    restart: unless-stopped
+    image: imgsite-client-prod:0.7.0
+    build:
+      context: client
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    networks:
+      - shared-network
+    depends_on:
+      - api
+
+volumes:
+  my-db:
+
+networks:
+  shared-network:

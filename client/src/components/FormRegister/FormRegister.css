@@ -1,0 +1,9 @@
+.container-form-register form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+} 
+
+.container-form-register form button {
+    max-width: 30%;
+} 
